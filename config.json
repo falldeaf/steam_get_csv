@@ -1,0 +1,11 @@
+{
+  "crons": {
+    "mycron": {
+      "cron": "* * * * *"
+    }
+  },
+  "switches": {
+    "myswitch": true
+  },
+  "colors": {}
+}
