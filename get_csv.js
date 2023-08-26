@@ -17,11 +17,13 @@ const GoogleSheetAppender = require('./GoogleSheetAppender');
 	const wl_csv = await getCSV(generateWishlistURL(getYesterday()), cookieString);
 	// Split the CSV string by lines and remove the first two lines
 	const cleanedCsvString = wl_csv.split('\n').slice(2).join('\n').trim();
-	await sheetAppender.appendToSheet(table_id, 'Wishlists', cleanedCsvString);
+	console.log(cleanedCsvString);
+	//await sheetAppender.appendToSheet(table_id, 'Wishlists', cleanedCsvString);
 
 	// Get the UTM CSV
 	const utm_csv = await getCSV(generateUTMURL(getYesterday(true)), cookieString);
-	await sheetAppender.appendToSheet(table_id, 'UTM', utm_csv);
+	console.log(utm_csv);
+	//await sheetAppender.appendToSheet(table_id, 'UTM', utm_csv);
 
 	/*
 	const response = await fetch(generateWishlistURL(), {
@@ -48,12 +50,29 @@ const GoogleSheetAppender = require('./GoogleSheetAppender');
 async function getCSV (url, cookie) {
 	const response = await fetch(url, {
 		headers: {
-			'Cookie': cookie
+			'Cookie': cookie,
+			"Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+			"Accept-Encoding": "gzip, deflate, br",
+			"Accept-Language": "en-US,en;q=0.5",
+			"Connection": "keep-alive",
+			"DNT": "1",
+			//"Host": "partner.steampowered.com",
+			//"Referer": "https://partner.steampowered.com/",
+			"Sec-Fetch-Dest": "document",
+			"Sec-Fetch-Mode": "navigate",
+			"Sec-Fetch-Site": "same-origin",
+			"Sec-Fetch-User": "?1",
+			"Sec-GPC": "1",
+			"TE": "trailers",
+			"Upgrade-Insecure-Requests": "1",
+			"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/116.0"
 		}
 	});
 
 	if (response.ok) {
 		const csvContent = await response.text();
+
+		console.log(csvContent);
 
 		//if csvContent starts with <!DOCTYPE HTML> then the cookies are expired, throw error
 		if(csvContent.startsWith("<!DOCTYPE HTML>")) {
@@ -76,8 +95,10 @@ function generateWishlistURL(date) {
 	return baseURL + date + "_to_" + date + params;
 }
 
-//
+//				     https://partner.steamgames.com/apps/utmtrafficstats/1411810?preset_date_range=custom&start_date=08%2F25%2F2023&end_date=08%2F25%2F2023&format=csv&content=daily
 //                   https://partner.steamgames.com/apps/utmtrafficstats/1411810?preset_date_range=custom&start_date=08%2F24%2F2023&end_date=08%2F24%2F2023&format=csv&content=daily
+//					 https://partner.steamgames.com/apps/navtrafficstats/1411810/?attribution_filter=all&preset_date_range=custom&start_date=08%2F25%2F2023&end_date=08%2F25%2F2023&format=csv
+
 function generateUTMURL(date) {
 	const baseURL = "https://partner.steamgames.com/apps/utmtrafficstats/1411810?preset_date_range=custom";
 	const params = `&start_date=${date}&end_date=${date}&format=csv&content=daily`;

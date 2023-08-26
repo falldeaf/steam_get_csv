@@ -1,11 +1,14 @@
 {
   "crons": {
-    "mycron": {
-      "cron": "* * * * *"
+    "getutm": {
+      "cron": "0 8 * * *"
+    },
+    "getwishlists": {
+      "cron": "0 8 * * *"
     }
   },
   "switches": {
-    "myswitch": true
-  },
-  "colors": {}
+    "getutmswitch": true,
+    "getwishlistsswitch": true
+  }
 }

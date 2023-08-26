@@ -3,13 +3,16 @@ const bodyParser = require('body-parser');
 const cron = require('node-cron');
 const fs = require('fs');
 const multer = require('multer');
+const merge = require('lodash.merge');
 
+/*
 let mdns;
 try {
 	mdns = require('mdns');
 } catch (e) {
 	console.log('mdns module not found');
 }
+*/
 
 class ExpressMapper {
 	constructor(configFile = 'config.json', port = 5000, discoverable = true) {
@@ -53,7 +56,38 @@ class ExpressMapper {
 	}
 
 	saveConfig() {
-		fs.writeFileSync(this.configFile, JSON.stringify(this.configs, null, 2));
+		// If the config file exists, read it into a variable
+		let existingConfig = {};
+		if (fs.existsSync(this.configFile)) {
+			existingConfig = JSON.parse(fs.readFileSync(this.configFile));
+		}
+
+		//const mergedConfig = { ...existingConfig, ...this.configs };
+		const mergedConfig = merge(existingConfig, this.configs);
+
+		// Write the merged configuration back to the config file
+		fs.writeFileSync(this.configFile, JSON.stringify(mergedConfig, null, 2));
+	}
+
+	// Checks if a key exists in the saved config.json file.
+	// Nested keys can be checked using dot notation, e.g., 'switches.light'
+	keyExistsInFile(key) {
+		let exists = false;
+		if (fs.existsSync(this.configFile)) {
+		const fileContent = JSON.parse(fs.readFileSync(this.configFile));
+		const keys = key.split('.');
+		let tempObj = fileContent;
+		for (const k of keys) {
+			if (tempObj.hasOwnProperty(k)) {
+			tempObj = tempObj[k];
+			exists = true;
+			} else {
+			exists = false;
+			break;
+			}
+		}
+		}
+		return exists;
 	}
 
 	defineRoute(method, path, callback, category = '', description) {
@@ -77,16 +111,22 @@ class ExpressMapper {
 		}, category, `Execute action for ${path}`);
 	}
 
-	defineSwitch(path, category = '') {
+	defineSwitch(path, default_state, category = '') {
 		this.configs.switches = this.configs.switches || {};
 
+		// Use the new method to check if the switch exists in the config file
+		if (!this.keyExistsInFile(`switches.${path}`)) {
+		  this.configs.switches[path] = default_state;
+		  this.saveConfig();
+		}
+
 		this.defineRoute('post', `/${path}/toggle`, (req, res) => {
-		this.configs.switches[path] = !this.configs.switches[path];
-		res.json({ status: this.configs.switches[path] ? 'ON' : 'OFF' });
+			this.configs.switches[path] = !this.configs.switches[path];
+			res.json({ status: this.configs.switches[path] ? 'ON' : 'OFF' });
 		}, category, `Toggle switch for ${path}`);
 
 		this.defineRoute('get', `/${path}/status`, (req, res) => {
-		res.json({ status: this.configs.switches[path] ? 'ON' : 'OFF' });
+			res.json({ status: this.configs.switches[path] ? 'ON' : 'OFF' });
 		}, category, `View switch status for ${path}`);
 	}
 
@@ -98,28 +138,34 @@ class ExpressMapper {
 		this.callbackRegistry[path] = taskCallback;
 
 		this.defineRoute('post', `/${path}/set`, (req, res) => {
-		const cronString = req.body.cron;
-		if (!cron.validate(cronString)) {
-			return res.status(400).json({ error: 'Invalid cron string' });
-		}
+			const cronString = req.body.cron;
+			if (!cron.validate(cronString)) {
+				return res.status(400).json({ error: 'Invalid cron string' });
+			}
 
-		// If a task for this path already exists, destroy it before creating a new one
-		if (this.cronTasks[path]) {
-			this.cronTasks[path].destroy();
-		}
+			// If a task for this path already exists, destroy it before creating a new one
+			if (this.cronTasks[path]) {
+				this.cronTasks[path].destroy();
+			}
 
-		// Create a new cron task using the callback from our registry
-		this.cronTasks[path] = cron.schedule(cronString, this.callbackRegistry[path]);
-		// Save the cron string and path (as callback reference) to the configs
-		this.configs.crons[path] = {
-			cron: cronString
-		};
+			// Create a new cron task using the callback from our registry
+			this.cronTasks[path] = cron.schedule(cronString, this.callbackRegistry[path]);
+			// Save the cron string and path (as callback reference) to the configs
+			this.configs.crons[path] = {
+				cron: cronString
+			};
 
-		res.json({ message: 'Cron task set successfully' });
+			res.json({ message: 'Cron task set successfully' });
 		}, category, `Set cron for ${path}`);
 
+		this.defineRoute('get', `/${path}/test`, (req, res) => {
+			this.callbackRegistry[path]();
+			res.json({ message: 'Cron task executed successfully' });
+		}, category, `Test cron for ${path}`);
+
+
 		this.defineRoute('get', `/${path}/view`, (req, res) => {
-		res.json({ cron: this.configs.crons[path] ? this.configs.crons[path].cron : null });
+			res.json({ cron: this.configs.crons[path] ? this.configs.crons[path].cron : null });
 		}, category, `View cron for ${path}`);
 	}
 
@@ -235,7 +281,7 @@ class ExpressMapper {
 				ad.start();
 			}
 		});
-}
+	}
 }
 
 module.exports = ExpressMapper;
