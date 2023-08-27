@@ -10,7 +10,8 @@ const GoogleSheetAppender = require('./GoogleSheetAppender');
 	const sheetAppender = new GoogleSheetAppender(google_auth_path);
 
 	// Load and format the saved cookies
-	const cookies = require('./steamcookies.json');
+	//const cookies = require('./steamcookies.json');
+	const cookies = require('./cookies.json');
 	const cookieString = cookies.map(cookie => `${cookie.name}=${cookie.value}`).join('; ');
 
 	// Get the Wishlist CSV
@@ -18,12 +19,12 @@ const GoogleSheetAppender = require('./GoogleSheetAppender');
 	// Split the CSV string by lines and remove the first two lines
 	const cleanedCsvString = wl_csv.split('\n').slice(2).join('\n').trim();
 	console.log(cleanedCsvString);
-	//await sheetAppender.appendToSheet(table_id, 'Wishlists', cleanedCsvString);
+	await sheetAppender.appendToSheet(table_id, 'Wishlists', cleanedCsvString);
 
 	// Get the UTM CSV
 	const utm_csv = await getCSV(generateUTMURL(getYesterday(true)), cookieString);
 	console.log(utm_csv);
-	//await sheetAppender.appendToSheet(table_id, 'UTM', utm_csv);
+	await sheetAppender.appendToSheet(table_id, 'UTM', utm_csv);
 
 	/*
 	const response = await fetch(generateWishlistURL(), {

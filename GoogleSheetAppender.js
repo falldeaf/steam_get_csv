@@ -34,21 +34,21 @@ class GoogleSheetAppender {
 		});
 	}
 
-	async appendToSheet(sheetId, sheetName, csvString) {
+	async appendToSheet(sheet_id, sheet_name, csv_string) {
 		if (!this.sheets) {
 			await this.authorize();
 		}
 
 		try {
-			const csvData = await this.parseCSV(csvString);
-			const csvDataWithoutHeaders = csvData.slice(1);  // Remove the header row
+			const csv_data = await this.parseCSV(csv_string);
+			const csv_data_without_headers = csv_data.slice(1);  // Remove the header row
 
 			const request = {
-				spreadsheetId: sheetId,
-				range: `${sheetName}`,
-				valueInputOption: 'RAW',
+				spreadsheetId: sheet_id,
+				range: `${sheet_name}`,
+				valueInputOption: 'USER_ENTERED',
 				resource: {
-				values: csvDataWithoutHeaders,
+					values: csv_data_without_headers,
 				},
 			};
 			const response = await this.sheets.spreadsheets.values.append(request);
@@ -57,6 +57,7 @@ class GoogleSheetAppender {
 			console.error(`Error: ${error}`);
 		}
 	}
+
 }
 
 module.exports = GoogleSheetAppender;
