@@ -1,12 +1,15 @@
 require('dotenv').config();
 const fetch = require('node-fetch');
-const expressMapper = require('./expressmapper.js');
-const GoogleSheetAppender = require('./GoogleSheetAppender');
 
+//Google Sheet Appender
+const GoogleSheetAppender = require('./GoogleSheetAppender');
 const table_id = process.env.TABLE_ID;
 const google_auth_path = process.env.GOOGLE_AUTH_PATH;
 const sheetAppender = new GoogleSheetAppender(google_auth_path);
-const em = new expressMapper('config.json', 5000, false);
+
+//Express Mapper
+const expressMapper = require('./expressmapper.js');
+const em = new expressMapper('config.json', 'steam-stats', 5000, true);
 
 em.defineLog('mylog', 50, 'Logs');
 

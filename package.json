@@ -25,6 +25,7 @@
     "node-cache": "^5.1.2",
     "node-cron": "^3.0.2",
     "node-fetch": "^2.7.0",
-    "papaparse": "^5.4.1"
+    "papaparse": "^5.4.1",
+    "redis": "^3.1.2"
   }
 }

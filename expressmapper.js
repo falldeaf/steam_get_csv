@@ -4,24 +4,20 @@ const cron = require('node-cron');
 const fs = require('fs');
 const multer = require('multer');
 const merge = require('lodash.merge');
-
-/*
-let mdns;
-try {
-	mdns = require('mdns');
-} catch (e) {
-	console.log('mdns module not found');
-}
-*/
+const redis = require('redis');
+const rclient = redis.createClient();
 
 class ExpressMapper {
-	constructor(configFile = 'config.json', port = 5000, discoverable = true) {
+	constructor(configFile = 'config.json', service_name, port = 5000, discoverable = false) {
+		if(service_name == null) throw new Error("service_name is null");
+
 		this.app = express();
 		this.app.use(bodyParser.json());
 		this.routes = [];
 		this.cronTasks = {};
 		this.callbackRegistry = {};
 		this.configs = {};
+		this.service_name = service_name;
 		this.discoverable = discoverable;
 		this.port = port;
 		// Ensure `this.configs.crons` is an object
@@ -276,11 +272,50 @@ class ExpressMapper {
 		this.app.listen(this.port, () => {
 			console.log(`Server running on port ${this.port}`);
 
-			if(this.discoverable) {
-				const ad = mdns.createAdvertisement(mdns.tcp('http'), this.port);
-				ad.start();
-			}
-		});
+			// Register the service with Redis if discoverable is set to true
+			if(!this.discoverable) return;
+
+			rclient.hset('services', this.service_name, `node.land:${this.port}`, (err, reply) => {
+				if (err) {
+				  console.error(`Failed to register service: ${err}`);
+				} else {
+				  console.log(`Registered service: ${this.service_name} with URL: ${this.service_name}`);
+				}
+			});
+
+			// Listening to various types of application termination
+			['SIGINT', 'SIGTERM', 'SIGQUIT', 'uncaughtException', 'exit'].forEach(eventType => {
+			process.on(eventType, (error) => {  // Added 'error' parameter to capture the error object in case of 'uncaughtException'
+
+				if (eventType === 'uncaughtException') {
+				console.error('Uncaught Exception:');
+				console.error(error);
+				}
+
+				console.log(`Received event: ${eventType}`);
+
+				try {
+
+					rclient.hdel('services', this.service_name, (err, reply) => {
+						if (err) {
+							console.error(`Failed to unregister service: ${err}`);
+						} else if (reply === 0) {
+							console.log(`Service ${this.service_name} does not exist`);
+						} else {
+							console.log(`Unregistered service: ${this.service_name}`);
+						}
+
+						process.exit((eventType === 'uncaughtException') ? 1 : 0); // Use non-zero exit code for 'uncaughtException'
+					});
+
+				} catch (error) {
+					console.error(error);
+					process.exit(1);  // Non-zero exit code indicates failure
+				}
+			});// End of process.on
+			});// End of forEach
+
+		}); // End of app.listen
 	}
 }
 
