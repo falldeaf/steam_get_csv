@@ -15,6 +15,7 @@ const rl = readline.createInterface({
 	// Wait for user to manually complete the login and 2FA processes...
 	console.log("Complete the login and 2FA, then press ENTER to continue...");
 
+	/*
 	rl.question('Press ENTER when you have finished logging in...', (answer) => {
 		rl.close();
 
@@ -28,4 +29,5 @@ const rl = readline.createInterface({
 			await browser.close();
 		})();
 	});
+	*/
 })();
