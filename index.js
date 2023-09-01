@@ -1,7 +1,7 @@
 const getStats = require('./steam_csv.js');
 
 const MicroCommander = require('microcommander');
-const mc = new MicroCommander('config.json', 'steam-stats', 5000, true);
+const mc = new MicroCommander('config.json', 'steam-stats', 5000, false);
 
 mc.defineLog('dl_log', 50, 'Logs');
 
@@ -20,3 +20,5 @@ mc.defineCron('get_stats', async () => {
 		mc.appendLog('dl_log', "Error: " + err);
 	}
 }, 'Cron Tasks');
+
+mc.listen();
