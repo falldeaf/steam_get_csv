@@ -1,3 +1,5 @@
+![Data Visualization](datavis.png)
+
 # Steam Marketing Data Automation Tool
 
 This tool automates the downloading of your Steam game's marketing data and appends it to a Google Sheet (You can set the Spreadsheet ID, and individual sheet names in steam_csv.js). From there, you could use Looker Studio to create nice, dynamic visualisations of your Steam data, without needing to visit many different pages with lots of clicks to get what you need. It uses Node.js, Puppeteer, and other libraries to get the job done.
