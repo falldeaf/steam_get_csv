@@ -83,21 +83,6 @@ class CSVDownloader {
 		const response = await fetch(url, {
 			headers: {
 				'Cookie': cookie_string,
-				//"Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
-				//"Accept-Encoding": "gzip, deflate, br",
-				//"Accept-Language": "en-US,en;q=0.5",
-				//"Connection": "keep-alive",
-				//"DNT": "1",
-				//"Host": domain,
-				//"Referer": "https://partner.steampowered.com/",
-				//"Sec-Fetch-Dest": "document",
-				//"Sec-Fetch-Mode": "navigate",
-				//"Sec-Fetch-Site": "same-origin",
-				//"Sec-Fetch-User": "?1",
-				//"Sec-GPC": "1",
-				//"TE": "trailers",
-				//"Upgrade-Insecure-Requests": "1",
-				//"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/116.0"
 			}
 		});
 
@@ -169,12 +154,14 @@ class CSVDownloader {
 	}
 }
 
-//module.exports = CSVDownloader;
+//export the class for use in other files
+module.exports = CSVDownloader;
 
+//uncomment this to run the script directly
 /*
 async function main() {
 	const downloader = new CSVDownloader();
-	await downloader.getAllCSVs(false, false);
+	await downloader.getAllCSVs(true, true);
 }
 main();
 */
