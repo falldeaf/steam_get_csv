@@ -1,14 +1,10 @@
 {
   "crons": {
-    "getutm": {
-      "cron": "0 8 * * *"
-    },
-    "getwishlists": {
+    "get_stats": {
       "cron": "0 8 * * *"
     }
   },
   "switches": {
-    "getutmswitch": true,
-    "getwishlistsswitch": true
+    "get_stats_switch": true
   }
 }
